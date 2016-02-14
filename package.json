@@ -4,6 +4,7 @@
     "gulp" : "^3.9.1",
     "gulp-param" : "^1.0.3",
     "gulp-rename" : "^1.2.2",
+    "gulp-template-util" : "^0.0.1",
     "event-stream" : "^3.3.2",
     "del" : "^2.2.0",
     "path" : "^0.12.7",

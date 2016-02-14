@@ -1,4 +1,4 @@
-(import "_default.jsonnet") + {
+(import "default.jsonnet") + {
     lang : "en_US",
 
     siteTitle(num) :: "Site"+num,
