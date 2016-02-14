@@ -1,0 +1,20 @@
+{
+  "name" : "${name}",
+  "devDependencies" : {
+    "gulp" : "^3.9.1",
+    "gulp-param" : "^1.0.3",
+    "gulp-rename" : "^1.2.2",
+    "event-stream" : "^3.3.2",
+    "del" : "^2.2.0",
+    "path" : "^0.12.7",
+    "q" : "^1.4.1",
+    "browserify" : "^13.0.0",
+    "jsonnet-exec" : "^0.1.0",
+    "coffeeify" : "^2.0.1",
+    "less" : "^2.6.0",
+    "jquery" : "^2.2.0"
+  },
+  "dependencies" : {
+    "bootstrap" : "^3.3.6"
+  }
+}
