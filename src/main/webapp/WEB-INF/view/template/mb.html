@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-tw" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head th:replace="template/std :: head"></head>
+<body>
+<div class="container">
+    <div layout:fragment="header"></div>
+    <div class="content">
+        <div class="info">
+            <div class="title">
+                <i th:class="#{${pagePath+'.icon'}}"></i>
+                <span th:text="#{${pagePath+'.title'}}"></span>
+            </div>
+            <div class="stage">
+                <div layout:fragment="content"></div>
+            </div>
+        </div>
+    </div>
+    <div layout:fragment="footer"></div>
+</div>
+<div th:include="template/std :: script" th:remove="tag"></div>
+</body>
+</html>

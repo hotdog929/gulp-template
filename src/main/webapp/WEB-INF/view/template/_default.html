@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html layout:decorator="template/mb" lang="zh-tw" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<body>
+
+    <div layout:fragment="header" th:remove="tag">
+        <div th:replace="template/header :: std"></div>
+        <div th:replace="template/nav :: std"></div>
+    </div>
+
+    <div layout:fragment="content" th:remove="tag">
+
+    </div>
+
+    <div layout:fragment="footer" th:remove="tag">
+        <div th:replace="template/footer :: std"></div>
+    </div>
+
+</body>
+</html>

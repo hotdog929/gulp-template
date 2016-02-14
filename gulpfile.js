@@ -42,12 +42,17 @@ var distI18n = distDir + '/i18n';
 
 
 function dirPath(path){
-    var result = path.trim();
-    if(result.length == 0){
-        return "/";
-    }else{
-        return (result[result.length - 1] == "/") ? result : result + "/";
-    }
+    var result = path.trim().match(/^\/?(.*?)\/?$/)[1];
+    return (result.length == 0) ? result : (result + '/');
+}
+
+function filePath(path){
+    return path.trim().match(/^\/?(.*)$/)[1];
+}
+
+function countPathLayer(path){
+    var dPath = dirPath(path);
+    return (dPath.length == 0) ? 0 : (dPath.split('/').length - 2);
 }
 
 function splitPaths(paths){
@@ -114,6 +119,71 @@ function logPromise(fn, args){
             console.log("'" + fn.name + "' errored after " + (new Date().getTime() - startTime) + 'ms');});
     return deferred.promise;
 }
+
+
+function replaceEnv(layerNum){
+    var relativePath = '.';
+    if(layerNum > 0){
+        var layerList = [];
+        for(var i=0 ; i<layerNum ; i++){
+            layerList.push('..');
+        }
+        relativePath = layerList.join('/');
+    }
+    return es.map(function(file, cb){
+        var reslut = file.contents.toString().replace(/\$ROOT\$/g, relativePath);
+        file.contents = new Buffer(reslut);
+        cb(null, file);
+    });
+}
+
+function addModuleTask(module){
+    module = module.trim();
+    var layerNum = countPathLayer(module);
+    var scriptStream = gulp.src(dirPath(scriptDir) + 'template/_default.coffee')
+        .pipe(rename(module + '.coffee'))
+        .pipe(replaceEnv(layerNum))
+        .pipe(gulp.dest(dirPath(scriptDir)));
+    var cssStream = gulp.src(dirPath(cssDir) + 'template/_default.less')
+        .pipe(rename(module + '.less'))
+        .pipe(replaceEnv(layerNum))
+        .pipe(gulp.dest(dirPath(cssDir)));
+    return streamsPromise(scriptStream, cssStream);
+}
+
+gulp.task('addModule', addModuleTask);
+
+
+function addViewTask(view){
+    view = view.trim();
+    var layerNum = countPathLayer(view);
+    var viewStream = gulp.src(dirPath(viewsDir) + 'template/_default.html')
+        .pipe(rename(view + '.html'))
+        .pipe(replaceEnv(layerNum))
+        .pipe(gulp.dest(dirPath(viewsDir)));
+    return Q.all([streamsPromise(viewStream), addModuleTask(view)]);
+}
+
+gulp.task('addView', addViewTask);
+
+
+function delModuleTask(module){
+    module = filePath(module.trim());
+    return del([
+        dirPath(scriptDir) + module + '.coffee',
+        dirPath(cssDir) + module + '.less'
+    ]);
+}
+
+gulp.task('delModule', delModuleTask);
+
+
+function delViewTask(view){
+    view = filePath(view.trim());
+    return Q.all([del([dirPath(viewsDir) + view + '.html']), delModuleTask(view)]);
+}
+
+gulp.task('delView', delViewTask);
 
 
 function buildTask(){
@@ -247,7 +317,7 @@ function i18nTask(paths){
         .pipe(buildJsI18n())
         .pipe(rename({extname:'.js'}))
         .pipe(gulp.dest(dirPath(distI18n)));
-    return streamsPromise(javaI18nStream, jsI18nStream)
+    return streamsPromise(javaI18nStream, jsI18nStream);
 }
 
 gulp.task('i18n', i18nTask);
