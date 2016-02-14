@@ -1,5 +1,5 @@
 {
-  "name" : "${name}",
+  "name" : "test-project",
   "devDependencies" : {
     "gulp" : "^3.9.1",
     "gulp-param" : "^1.0.3",
@@ -8,6 +8,7 @@
     "del" : "^2.2.0",
     "path" : "^0.12.7",
     "q" : "^1.4.1",
+    "underscore" : "^1.8.3",
     "browserify" : "^13.0.0",
     "jsonnet-exec" : "^0.1.0",
     "coffeeify" : "^2.0.1",

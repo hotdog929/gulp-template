@@ -6,6 +6,7 @@ var es = require('event-stream');
 var del = require('del');
 var path = require('path');
 var Q = require('q');
+var _ = require('underscore');
 
 var browserify = require('browserify');
 var jsonnetExec = require('jsonnet-exec');
@@ -40,25 +41,25 @@ var distCss = distDir + '/css';
 var distI18n = distDir + '/i18n';
 
 
-var dirPath = function(path){
+function dirPath(path){
     var result = path.trim();
     if(result.length == 0){
         return "/";
     }else{
         return (result[result.length - 1] == "/") ? result : result + "/";
     }
-};
+}
 
-var splitPaths = function(paths){
+function splitPaths(paths){
     var pathList = paths.split(',');
     var list = [];
     for(var i=0 ; i<pathList.length ; i++){
         list.push(pathList[i].trim());
     }
     return list;
-};
+}
 
-var streamsPromise = function(){
+function streamsPromise(){
     var streams = arguments;
     var deferred = Q.defer();
     var endNum = 0;
@@ -77,10 +78,45 @@ var streamsPromise = function(){
             .on('error', onStreamError)
     }
     return deferred.promise;
-};
+}
+
+function streamsFnPromise(){
+    var fns = arguments;
+    var streams = [];
+    for(var i=0 ; i<fns.length ; i++){
+        streams.push(fns[i]());
+    }
+    return streamsPromise.apply(this, streams);
+}
+
+function logStream(fn, args){
+    var deferred = Q.defer();
+    var startTime = new Date().getTime();
+    console.log("Starting '" + fn.name + "'");
+    fn.apply(this, args).on('end', function(){
+            deferred.resolve();
+            console.log("Finished '" + fn.name + "' after " + (new Date().getTime() - startTime) + 'ms');})
+        .on('error', function(error){
+            deferred.reject();
+            console.log("'" + fn.name + "' errored after " + (new Date().getTime() - startTime) + 'ms');});
+    return deferred.promise;
+}
+
+function logPromise(fn, args){
+    var deferred = Q.defer();
+    var startTime = new Date().getTime();
+    console.log("Starting '" + fn.name + "'");
+    fn.apply(this, args).then(function(){
+            deferred.resolve();
+            console.log("Finished '" + fn.name + "' after " + (new Date().getTime() - startTime) + 'ms');})
+        .catch(function(error){
+            deferred.reject();
+            console.log("'" + fn.name + "' errored after " + (new Date().getTime() - startTime) + 'ms');});
+    return deferred.promise;
+}
 
 
-gulp.task('build', function(){
+function buildTask(){
     var deferred = Q.defer();
     Q.fcall(cleanTask)
         .then(function(){return streamsPromise(copyWebLibTask(), copyWebResourceTask())})
@@ -88,21 +124,44 @@ gulp.task('build', function(){
         .then(function(){return streamsPromise(scriptAllTask(), cssAllTask())})
         .then(function(){deferred.resolve();});
     return deferred.promise;
-});
+}
+
+gulp.task('build', buildTask);
 
 
-var cleanTask = function(){
+function cleanTask(){
     return del([
         distDir,
         jsonI18nDir,
         javaI18nDir
     ]);
-};
+}
 
 gulp.task('clean', cleanTask);
 
 
-var copyWebLibTask = function(){
+gulp.task('watch', function(view, modules){
+    scriptModules = (!modules) ? [] : splitPaths(modules);
+    scriptModules.push(view);
+    var scriptPaths = _.map(scriptModules, function(name){return dirPath(scriptDir) + '**/'+name+'.coffee'});
+    gulp.watch(scriptPaths, function(event){
+        logStream(scriptTask, [dirPath(scriptDir) + '**/'+view+'.coffee']);
+    });
+
+    cssModules = (!modules) ? [] : splitPaths(modules);
+    cssModules.push(view);
+    var cssPaths = _.map(cssModules, function(name){return dirPath(cssDir) + '**/'+name+'.less'});
+    gulp.watch(cssPaths, function(event){
+        logStream(cssTask, [dirPath(cssDir) + '**/'+view+'.less']);
+    });
+
+    gulp.watch(dirPath(i18nDir) + "**/*.jsonnet", function(event){
+        logPromise(i18nTask, [event.path]);
+    });
+});
+
+
+function copyWebLibTask(){
     var packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8').toString());
     if(!packageJson.dependencies){
         packageJson.dependencies = {};
@@ -114,19 +173,20 @@ var copyWebLibTask = function(){
     return gulp.src(webLibModules, {base : dirPath(nodeModulesDir)})
         .pipe(gulp.dest(dirPath(distDir)))
         .pipe(gulp.dest(dirPath(webLibDir)));
-};
+}
 
 gulp.task('copyWebLib', copyWebLibTask);
 
 
-var copyWebResourceTask = function(){
+function copyWebResourceTask(){
     return gulp.src(dirPath(webResourceDir) + "**/*", {base : dirPath(webResourceDir)})
         .pipe(gulp.dest(dirPath(distDir)));
-};
+}
+
 gulp.task('copyWebResource', copyWebResourceTask);
 
 
-var jsonToProperties = function(json, prefix){
+function jsonToProperties(json, prefix){
     var str = '';
     for(var p in json){
         if(typeof json[p] === 'object' && json[p] !== null){
@@ -147,9 +207,9 @@ var jsonToProperties = function(json, prefix){
         }
     }
     return str;
-};
+}
 
-var buildJavaI18n = function(){
+function buildJavaI18n(){
     return es.map(function(file, cb){
         var i18nJson = JSON.parse(file.contents.toString());
         var resutl = jsonToProperties(i18nJson, '');
@@ -158,25 +218,25 @@ var buildJavaI18n = function(){
         file.path = path.join(file.base, javaI18nFileName.replace(javaI18nFileNameRegex, fileName));
         cb(null, file);
     });
-};
+}
 
-var buildJsI18n = function(){
+function buildJsI18n(){
     return es.map(function(file, cb){
         var i18nJson = JSON.parse(file.contents.toString());
         file.contents = new Buffer(jsWebI18n + ' = ' + JSON.stringify(i18nJson)+";");
         cb(null, file);
     });
-};
+}
 
-var buildI18n = function(){
+function buildI18n(){
     return es.map(function(file, cb){
         var result = jsonnetExec.execSync(file.path);
         file.contents = new Buffer(result);
         cb(null, file);
     });
-};
+}
 
-var i18nTask = function(paths){
+function i18nTask(paths){
     var javaI18nStream = gulp.src(splitPaths(paths))
         .pipe(buildI18n())
         .pipe(buildJavaI18n())
@@ -188,30 +248,30 @@ var i18nTask = function(paths){
         .pipe(rename({extname:'.js'}))
         .pipe(gulp.dest(dirPath(distI18n)));
     return streamsPromise(javaI18nStream, jsI18nStream)
-};
+}
 
 gulp.task('i18n', i18nTask);
 
-var i18nAllTask = function(){
+function i18nAllTask(){
     return i18nTask(dirPath(i18nDir) + "**/*.jsonnet");
-};
+}
 
 gulp.task("i18nAll", i18nAllTask);
 
 
 
-var scriptEnvTask = function(){
+function scriptEnvTask(){
     return Q.nfcall(
         fs.writeFile,
         dirPath(scriptDir) + '_env.coffee',
         'module.exports = {version:"' + version + '",cdn:"' + dirPath(cdn) + version + '"};');
-};
+}
 
 gulp.task('scriptEnv', scriptEnvTask);
 
 var coffeeify = require('coffeeify');
 
-var buildScript = function(){
+function buildScript(){
     return es.map(function(file, cb){
         var bundle = browserify({extensions : ['.coffee']});
         bundle.transform(coffeeify, {bare : false, header : true});
@@ -225,37 +285,37 @@ var buildScript = function(){
             cb(null, file);
         });
     });
-};
+}
 
-var scriptTask = function(paths){
+function scriptTask(paths){
     return gulp.src(splitPaths(paths))
         .pipe(buildScript())
         .pipe(rename({extname:'.js'}))
         .pipe(gulp.dest(dirPath(distJs)));
-};
+}
 
 gulp.task('script', ['scriptEnv'], scriptTask);
 
-var scriptAllTask = function(){
+function scriptAllTask(){
     return scriptTask(dirPath(scriptDir) + "**/*.coffee");
-};
+}
 
 gulp.task('scriptAll', ['scriptEnv'], scriptAllTask);
 
 
 
-var cssEnvTask = function(){
+function cssEnvTask(){
     return Q.nfcall(
         fs.writeFile,
         dirPath(cssDir) + '_env.less',
         '@version:"' + version + '";@cdn:"' + dirPath(cdn) + version + '";');
-};
+}
 
 gulp.task('cssEnv', cssEnvTask);
 
 var less = require('less');
 
-var buildCss = function(){
+function buildCss(){
     return es.map(function(file, cb){
         less.render(
             file.contents.toString(), {
@@ -273,19 +333,19 @@ var buildCss = function(){
             }
         );
     });
-};
+}
 
-var cssTask = function(paths){
+function cssTask(paths){
     return gulp.src(splitPaths(paths))
         .pipe(buildCss())
         .pipe(rename({extname:'.css'}))
         .pipe(gulp.dest(dirPath(distCss)));
-};
+}
 
 gulp.task('css', ['cssEnv'], cssTask);
 
-var cssAllTask = function(){
+function cssAllTask(){
     return cssTask(dirPath(cssDir) + "**/*.less");
-};
+}
 
 gulp.task('cssAll', ['cssEnv'], cssAllTask);
