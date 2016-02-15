@@ -2,6 +2,7 @@
 ## 指令集
 
 * addModule --module [moduleName] --template [templateName]
+
   ```
   gulp addModule --module site1/test
     if template is empty then use default template.
@@ -11,7 +12,9 @@
       [templateDir]/default/css.less
         to [cssDir]/site1/test.less
   ```
+  
 * addView --view [viewName] --template [templateName]
+  
   ```
   gulp addView --view index --template single
     if template is empty then use default template.
@@ -23,6 +26,7 @@
       [templateDir]/single/css.less
         to [cssDir]/index.less
   ```
+  
 * delModule --module [moduleName]
   ```
   gulp delModule --module site1/test
