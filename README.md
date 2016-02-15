@@ -163,15 +163,16 @@
   gulp watch --view index --modules main,popup
     modules can empty
     if following script changed : 
-      [scriptDir]/**/*.index.coffee
-      [scriptDir]/**/*.main.coffee
-      [scriptDir]/**/*.popup.coffee
+      [scriptDir]/**/index.coffee
+      [scriptDir]/**/main.coffee
+      [scriptDir]/**/popup.coffee
       then build [scriptDir]/**/index.coffee
         to [distJs]/**/index.js
     if following css changed : 
-      [cssDir]/**/*.index.less
-      [cssDir]/**/*.main.less
-      [cssDir]/**/*.popup.less
+      [cssDir]/**/index.less
+      [cssDir]/**/main.less
+      [cssDir]/**/popup.less
       then build [cssDir]/**/index.less
         to [distCss]/**/index.css
+    if [i18nDir]/**/*.jsonnet changed then build i18n
   ```
