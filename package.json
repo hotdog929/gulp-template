@@ -1,19 +1,11 @@
 {
-  "name" : "test-project",
+  "name" : "$NAME$",
   "devDependencies" : {
     "gulp" : "^3.9.1",
     "gulp-param" : "^1.0.3",
-    "gulp-rename" : "^1.2.2",
-    "gulp-template-util" : "^0.0.1",
-    "event-stream" : "^3.3.2",
-    "del" : "^2.2.0",
-    "path" : "^0.12.7",
-    "q" : "^1.4.1",
-    "underscore" : "^1.8.3",
-    "browserify" : "^13.0.0",
-    "jsonnet-exec" : "^0.1.0",
-    "coffeeify" : "^2.0.1",
-    "less" : "^2.6.0",
+    "gulp-template-servlet-expansion" : "^0.0.4",
+    "gulp-template-expansion-script-coffee" : "^0.0.1",
+    "gulp-template-expansion-css-less" : "^0.0.1",
     "jquery" : "^2.2.0"
   },
   "dependencies" : {
