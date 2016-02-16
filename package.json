@@ -3,7 +3,7 @@
   "devDependencies" : {
     "gulp" : "^3.9.1",
     "gulp-param" : "^1.0.3",
-    "gulp-template-servlet-expansion" : "^0.0.6",
+    "gulp-template-servlet-expansion" : "^0.0.7",
     "gulp-template-expansion-script-coffee" : "^0.0.1",
     "gulp-template-expansion-css-less" : "^0.0.1",
     "jquery" : "^2.2.0"

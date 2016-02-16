@@ -1,6 +1,14 @@
 # gulp-template-servlet-coffee-less
 ## 指令集
 
+* changeConfig --site [siteName]
+
+  ```
+    gulp changeConfig --site production
+      always copy [configDir]/default/**/* to ./ first
+      if siteName defined then copy [configDir]/[siteName]/**/* to ./ 
+  ```
+
 * addModule --module [moduleName] --template [templateName]
 
   ```
@@ -70,7 +78,7 @@
     copy all file in [webResourceDir] to [distDirWithVersion]
   ```
 
-* i18n --paths [pathList]
+* i18n --paths [pathList] --langs [langList]
 
   ```
   gulp i18n --paths src/main/i18n/en_US.jsonnet,src/main/i18n/zh_TW.jsonnet
@@ -99,7 +107,7 @@
     use [versionFile] and [cdnFile] to create [scriptDir]/_env.coffee 
   ```
 
-* script --paths [pathList]
+* script --paths [pathList] --modules [moduleNames]
 
   ```
   gulp script --paths src/main/webapp/coffee/index.coffee
@@ -124,7 +132,7 @@
     use [versionFile] and [cdnFile] to create [cssDir]/_env.less 
   ```
 
-* css --paths [pathList]
+* css --paths [pathList] --modules [moduleNames]
 
   ```
   gulp script --paths src/main/webapp/less/index.less
@@ -157,7 +165,7 @@
       cssAll
   ```
 
-* watch --view [viewName] --modules [moduleList]
+* watch --view [viewName] --modules [moduleNames]
 
   ```
   gulp watch --view index --modules main,popup
