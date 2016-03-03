@@ -1,6 +1,27 @@
 # gulp-template-servlet-coffee-less
 ## 指令集
 
+* init
+  
+  ```
+  gulp init
+    initialize project
+    sequence run following task :
+      clean
+      env
+      changeConfig
+  ```
+
+* env
+
+  ```
+  gulp env
+    build following files :
+      env/**/*.jsonnet
+        to env/**/*.json
+        to [configDir]/**/*.properties
+  ```
+
 * changeConfig --site [siteName]
 
   ```
